@@ -1,0 +1,10 @@
+{
+  "sourceRepository": "https://github.com/ArknightsAssets/ArknightsAssets2",
+  "sourceBranch": "voice",
+  "sourceCommit": "b532173bd03c4fe04bb705b9fd66e3033865ad66",
+  "importedOn": "2026-09-15",
+  "path": "assets/dyn/audio/sound_beta_2/voice_custom",
+  "language": "Regional and alternate",
+  "legacySourceRepository": "https://github.com/PseudoMon/arknights-audio",
+  "legacyPathFormat": "legacy/{sourceCommit}/{characterId}/{voiceId}.mp3"
+}
