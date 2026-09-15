@@ -1,0 +1,50 @@
+name: Sync voice assets
+
+on:
+  schedule:
+    # Daily, several hours after the 11:00 UTC game reset.
+    - cron: '37 14 * * *'
+  workflow_dispatch:
+
+concurrency:
+  group: sync-voice-assets
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+          sparse-checkout: |
+            .github
+            scripts
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - uses: actions/cache@v4
+        with:
+          path: .cache/upstream-voices
+          key: upstream-voices-v1-${{ github.repository }}-${{ github.run_id }}
+          restore-keys: |
+            upstream-voices-v1-${{ github.repository }}-
+
+      - name: Sync changed clips from the public upstream
+        run: python3 scripts/sync_voice_assets.py
+
+      - name: Commit synced assets
+        run: |
+          if git diff --cached --quiet; then
+            echo 'No voice asset changes.'
+            exit 0
+          fi
+          git config user.name 'arkpedia-bot'
+          git config user.email 'arkpedia-bot@users.noreply.github.com'
+          git commit -m 'Sync voice assets from public upstream'
+          git push origin main
