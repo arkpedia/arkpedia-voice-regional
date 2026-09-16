@@ -3,6 +3,7 @@
 
 from __future__ import annotations
 
+import hashlib
 import json
 import subprocess
 import urllib.parse
@@ -30,7 +31,7 @@ def ensure_upstream(url: str, branch: str, old_commit: str, cache: Path) -> tupl
         cache.parent.mkdir(parents=True, exist_ok=True)
         run(
             "git", "clone", "--filter=blob:none", "--no-checkout", "--single-branch",
-            "--branch", branch, url, str(cache),
+            "--branch", branch, "--depth=1", url, str(cache),
         )
     else:
         run("git", "remote", "set-url", "origin", url, cwd=cache)
@@ -99,6 +100,12 @@ def main() -> None:
         if target:
             changes.append((status, path, target))
 
+    removed = [path for status, path, _ in changes if status == 'D']
+    if removed:
+        raise RuntimeError(f'Upstream removed {len(removed)} recordings; review archival/mapping before syncing. Nothing will be deleted.')
+    if len(changes) > 1500:
+        raise RuntimeError(f'Unexpected bulk voice replacement ({len(changes)}); review upstream before proceeding.')
+
     downloaded: dict[str, bytes] = {}
     with ThreadPoolExecutor(max_workers=16) as pool:
         futures = {
@@ -106,7 +113,18 @@ def main() -> None:
             for status, path, _ in changes if status != "D"
         }
         for future in as_completed(futures):
-            downloaded[futures[future]] = future.result()
+            path = futures[future]
+            data = future.result()
+            if not 0 < len(data) < 100 * 1024 * 1024:
+                raise ValueError(f'Empty or oversized audio: {path}')
+            expected = run('git', 'rev-parse', f'{new_commit}:{path}', cwd=upstream, capture=True)
+            actual = hashlib.sha1(f'blob {len(data)}\0'.encode() + data).hexdigest()
+            if actual != expected:
+                raise ValueError(f'Upstream voice hash mismatch: {path}')
+            # Decode every changed recording before any files are staged.
+            subprocess.run(['ffmpeg', '-v', 'error', '-xerror', '-i', 'pipe:0', '-f', 'null', '-'],
+                           input=data, check=True, timeout=60)
+            downloaded[path] = data
 
     staged: list[str] = []
     added_or_updated = deleted = 0

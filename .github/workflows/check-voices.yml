@@ -1,0 +1,31 @@
+name: Validate voice changes
+on:
+  push:
+    branches: [main]
+  pull_request:
+permissions:
+  contents: read
+concurrency:
+  group: voice-check-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+          filter: blob:none
+          sparse-checkout: |
+            .github
+            scripts
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Validate changed audio
+        env:
+          BASE: ${{ github.event.pull_request.base.sha || github.event.before }}
+        run: |
+          git fetch --filter=blob:none --depth=1 origin "$BASE"
+          python scripts/validate_voice_changes.py --base "$BASE"
