@@ -6,5 +6,13 @@
   "path": "assets/dyn/audio/sound_beta_2/voice_custom",
   "language": "Regional and alternate",
   "legacySourceRepository": "https://github.com/PseudoMon/arknights-audio",
-  "legacyPathFormat": "legacy/{sourceCommit}/{characterId}/{voiceId}.mp3"
+  "legacyPathFormat": "legacy/{sourceCommit}/{characterId}/{voiceId}.mp3",
+  "supplementalSource": {
+    "sourceRepository": "https://github.com/PuppiizSunniiz/Arknight-voices",
+    "sourceBranch": "main",
+    "sourceCommit": "3188971654107eeb2786058511e5811abc1cc122",
+    "importedOn": "2026-09-17",
+    "path": "voice_custom",
+    "policy": "Additional MP3 releases absent from the primary mirror"
+  }
 }
