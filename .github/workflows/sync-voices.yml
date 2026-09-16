@@ -29,8 +29,16 @@ jobs:
         with:
           python-version: '3.12'
 
-      - name: Sync changed clips from the public upstream
+      - name: Install FFmpeg
+        run: |
+          sudo apt-get update
+          sudo apt-get install --yes ffmpeg
+
+      - name: Sync changed clips from the primary public mirror
         run: python3 scripts/sync_voice_assets.py
+
+      - name: Sync changed clips from the Aceship Global mirror
+        run: python3 scripts/sync_supplemental_voice_assets.py
 
       - name: Commit synced assets
         run: |

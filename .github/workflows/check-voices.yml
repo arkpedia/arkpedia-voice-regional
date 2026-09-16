@@ -23,6 +23,10 @@ jobs:
       - uses: actions/setup-python@v7
         with:
           python-version: '3.12'
+      - name: Install FFmpeg
+        run: |
+          sudo apt-get update
+          sudo apt-get install --yes ffmpeg
       - name: Validate changed audio
         env:
           BASE: ${{ github.event.pull_request.base.sha || github.event.before }}
