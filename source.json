@@ -10,8 +10,8 @@
   "supplementalSource": {
     "sourceRepository": "https://github.com/PuppiizSunniiz/Arknight-voices",
     "sourceBranch": "main",
-    "sourceCommit": "3188971654107eeb2786058511e5811abc1cc122",
-    "importedOn": "2026-09-17",
+    "sourceCommit": "4e62ef82a328fb2c3a6fc9d394e20e99c4e72b19",
+    "importedOn": "2026-09-26",
     "path": "voice_custom",
     "policy": "Additional MP3 releases absent from the primary mirror"
   }
