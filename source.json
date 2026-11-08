@@ -1,8 +1,8 @@
 {
   "sourceRepository": "https://github.com/ArknightsAssets/ArknightsAssets2",
   "sourceBranch": "voice",
-  "sourceCommit": "2c7efe3c96ff8eb96af777ff7508144b4485654a",
-  "importedOn": "2026-11-01",
+  "sourceCommit": "844ea57fdd0e65ed823620249dac12931f92a2e4",
+  "importedOn": "2026-11-08",
   "path": "assets/dyn/audio/sound_beta_2/voice_custom",
   "language": "Regional and alternate",
   "legacySourceRepository": "https://github.com/PseudoMon/arknights-audio",
@@ -10,8 +10,8 @@
   "supplementalSource": {
     "sourceRepository": "https://github.com/PuppiizSunniiz/Arknight-voices",
     "sourceBranch": "main",
-    "sourceCommit": "ac363b56390db6d82d1d3ba70b56a835ca676f28",
-    "importedOn": "2026-11-01",
+    "sourceCommit": "24a0d9a6a3534c91268a72064c363ccf5fbe59a2",
+    "importedOn": "2026-11-08",
     "path": "voice_custom",
     "policy": "Additional MP3 releases absent from the primary mirror"
   }
