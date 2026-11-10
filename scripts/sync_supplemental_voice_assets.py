@@ -5,11 +5,14 @@ from __future__ import annotations
 
 import hashlib
 import json
+import re
 import subprocess
 import urllib.parse
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import datetime, timezone
 from pathlib import Path, PurePosixPath
+
+from sync_voice_assets import destination as primary_destination
 
 ROOT = Path(__file__).resolve().parents[1]
 SOURCE_FILE = ROOT / "source.json"
@@ -63,6 +66,33 @@ def source_assets(repo: Path, commit: str, base_path: str) -> list[str]:
         cwd=repo,
     )
     return [path for path in raw.decode("utf-8").split("\0") if path]
+
+
+def primary_targets(manifest: dict) -> set[str]:
+    # The primary sync runs first and updates this pin. Its cached tree remains
+    # authoritative even when the working tree is sparse or the branch moves.
+    commit = manifest["sourceCommit"]
+    if not re.fullmatch(r"[0-9a-fA-F]{40}", commit):
+        raise ValueError("Primary sourceCommit must be a full commit hash")
+    cache = ROOT / ".cache/upstream-voices"
+    if not (cache / ".git").is_dir():
+        cache.mkdir(parents=True, exist_ok=True)
+        run("git", "init", "--quiet", str(cache))
+        run("git", "remote", "add", "origin", manifest["sourceRepository"], cwd=cache)
+    if subprocess.run(
+        ["git", "cat-file", "-e", f"{commit}^{{commit}}"],
+        cwd=cache, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
+    ).returncode:
+        run("git", "remote", "set-url", "origin", manifest["sourceRepository"], cwd=cache)
+        run(
+            "git", "fetch", "--filter=blob:none", "--depth=1",
+            "origin", commit, cwd=cache,
+        )
+    return {
+        target
+        for path in source_assets(cache, commit, manifest["path"])
+        if (target := primary_destination(path, manifest["path"])) is not None
+    }
 
 
 def tracked_assets() -> set[str]:
@@ -130,6 +160,9 @@ def main() -> None:
             changes_by_target[target] = ("A", asset_path, target)
 
     changes = list(changes_by_target.values())
+    if changes:
+        owned_by_primary = primary_targets(manifest)
+        changes = [change for change in changes if change[2] not in owned_by_primary]
 
     removed = [asset_path for status, asset_path, _ in changes if status == "D"]
     if removed:
